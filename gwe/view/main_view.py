@@ -26,6 +26,7 @@ from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCan
 
 from gwe.interactor.settings_interactor import SettingsInteractor
 from gwe.model.status import Status
+from gwe.util.deployment import is_flatpak
 from gwe.model.fan_profile import FanProfile
 
 try:  # AppIndicator3 may not be installed
@@ -202,7 +203,7 @@ class MainView(MainViewInterface):
             self._window.show()
 
     def get_power_limit(self) -> Tuple[int, int]:
-        return 0, self._power_limit_adjustment.get_value()
+        return 0, int(round(self._power_limit_adjustment.get_value()))
 
     def set_statusbar_text(self, text: str) -> None:
         self._statusbar.remove_all(self._context)
@@ -248,7 +249,8 @@ class MainView(MainViewInterface):
                 minimum = gpu_status.power.minimum
                 maximum = gpu_status.power.maximum
                 default = gpu_status.power.default
-                if minimum is not None and maximum is not None and default is not None and minimum != maximum:
+                if (minimum is not None and maximum is not None and default is not None
+                        and minimum != maximum and not is_flatpak()):
                     limit = gpu_status.power.limit
                     self._power_limit_adjustment.set_lower(minimum)
                     self._power_limit_adjustment.set_upper(maximum)

@@ -1239,7 +1239,7 @@ along with gwe.  If not, see <http://www.gnu.org/licenses/>.
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="margin_top">5</property>
-                                            <property name="label" translatable="yes">Overclock control requires Coolbits 8 to be set</property>
+                                            <property name="label" translatable="yes">Clock control is unavailable on this GPU or installation</property>
                                             <property name="use_markup">True</property>
                                             <property name="justify">center</property>
                                           </object>
@@ -1781,7 +1781,7 @@ along with gwe.  If not, see <http://www.gnu.org/licenses/>.
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="margin_top">5</property>
-                                            <property name="label" translatable="yes">Fan control requires Coolbits 4 to be set</property>
+                                            <property name="label" translatable="yes">Fan control is unavailable on this GPU or installation</property>
                                             <property name="justify">center</property>
                                           </object>
                                           <packing>

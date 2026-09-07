@@ -1,4 +1,9 @@
 # GreenWithEnvy (GWE)
+
+**Modern NVIDIA drivers / Wayland:** this checkout now uses NVML. See
+[NVML migration and native launch instructions](NVML-MIGRATION.md). The legacy
+installation instructions below describe the original release.
+
 GWE is a GTK system utility designed to provide information, control the fans and overclock your NVIDIA video card
 and graphics processor.
 

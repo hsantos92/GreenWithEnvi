@@ -143,6 +143,8 @@ class MainPresenter:
         self._setting_changed_subject = setting_changed_subject
         self._composite_disposable: CompositeDisposable = composite_disposable
         self._fan_profile_selected: Optional[FanProfile] = None
+        self._fan_control_pending = False
+        self._pending_fan_request = None
         self._fan_profile_applied: Optional[FanProfile] = None
         self._overclock_profile_selected: Optional[OverclockProfile] = None
         self._overclock_profile_applied: Optional[OverclockProfile] = None
@@ -247,24 +249,15 @@ class MainPresenter:
         ).subscribe(on_next=self._handle_has_nvidia_driver_result))
 
     def _handle_has_nvidia_driver_result(self, result: HasNvidiaDriverResult) -> None:
-        if result == HasNvidiaDriverResult.NV_CONTROL_MISSING:
-            _LOG.error("NV-CONTROL missing!")
-            self.main_view.show_error_message_dialog(
-                "NV-CONTROL X extension not found",
-                "It was not possible to find the NVIDIA NV-CONTROL X extension on the current Display device.\n"
-                "Please make sure that the NVIDIA proprietary display drivers are installed and they support your "
-                "current GPU"
-            )
-            get_default_application().quit()
-        elif result == HasNvidiaDriverResult.NVML_MISSING:
+        if result == HasNvidiaDriverResult.NVML_MISSING:
             _LOG.error("NVML missing!")
-            message = "It was not possible to find the NVML Shared Library.\n" \
-                      "Please make sure that the NVIDIA proprietary display drivers are installed and they support " \
+            message = "It was not possible to access an NVIDIA GPU through NVML.\n" \
+                      "Please make sure that the NVIDIA display drivers are installed and they support " \
                       "your current GPU."
             if is_flatpak():
                 message += f"\n\nIf you installed {APP_NAME} via Flathub, make sure to run \"flatpak update\" " \
                            "to fetch the latest version of org.freedesktop.Platform.GL.nvidia."
-            self.main_view.show_error_message_dialog("NVML Shared Library not found", message)
+            self.main_view.show_error_message_dialog("NVIDIA GPU unavailable", message)
             get_default_application().quit()
         else:
             self._start_refresh()
@@ -329,7 +322,7 @@ class MainPresenter:
             self.main_view.refresh_status(status, self._gpu_index)
             self._historical_data_presenter.add_status(status, self._gpu_index)
         else:
-            self._set_fan_speed(self._gpu_index, manual_control=False)
+            self.main_view.set_statusbar_text('Unable to read GPU status')
 
     def _update_fan(self) -> None:
         fan = self._latest_status.gpu_status_list[self._gpu_index].fan
@@ -345,8 +338,12 @@ class MainPresenter:
                 elif gpu_status.temp.gpu:
                     try:
                         speed = round(self._get_fan_duty(self._fan_profile_applied, gpu_status.temp.gpu))
-                        if self._should_update_fan_duty(speed):
-                            self._set_fan_speed(gpu_status.index, round(speed))
+                        if fan.manual_control and not self._should_update_fan_duty(speed) and fan.fan_list:
+                            current_duty = fan.fan_list[0][0]
+                            if current_duty is not None:
+                                speed = current_duty
+                        # Refresh the worker watchdog even when hysteresis keeps the duty unchanged.
+                        self._set_fan_speed(gpu_status.index, round(speed))
                     except ValueError:
                         _LOG.exception(f'Unable to parse temperature {gpu_status.temp.gpu}')
 
@@ -362,6 +359,8 @@ class MainPresenter:
         if self._previous_status is not None and self._latest_status is not None and hysteresis != 0:
             current_temp = self._latest_status.gpu_status_list[self._gpu_index].temp.gpu
             previous_temp = self._previous_status.gpu_status_list[self._gpu_index].temp.gpu
+            if current_temp is None or previous_temp is None:
+                return True
             temp_delta = current_temp - previous_temp
             if -hysteresis <= temp_delta <= 0:
                 return False
@@ -418,12 +417,29 @@ class MainPresenter:
             self.main_view.refresh_chart(profile)
 
     def _set_fan_speed(self, gpu_index: int, speed: int = 100, manual_control: bool = True) -> None:
+        if self._fan_control_pending:
+            self._pending_fan_request = (gpu_index, speed, manual_control)
+            return
+        self._fan_control_pending = True
         _LOG.debug(f"Setting fan speed to {speed}")
         self._composite_disposable.add(self._set_fan_speed_interactor.execute(gpu_index, speed, manual_control).pipe(
             operators.subscribe_on(self._scheduler),
             operators.observe_on(GtkScheduler(GLib)),
-        ).subscribe(on_error=lambda e: (_LOG.exception(f"Set cooling error: {str(e)}"),
-                                        self.main_view.set_statusbar_text('Error applying fan profile!'))))
+        ).subscribe(on_next=self._on_fan_control_applied, on_error=self._on_fan_control_error))
+
+    def _on_fan_control_applied(self, _success: bool) -> None:
+        self._fan_control_pending = False
+        request = self._pending_fan_request
+        self._pending_fan_request = None
+        if request is not None:
+            self._set_fan_speed(*request)
+
+    def _on_fan_control_error(self, error: Exception) -> None:
+        self._fan_control_pending = False
+        self._pending_fan_request = None
+        self._fan_profile_applied = None
+        _LOG.error('Fan control failed: %s', error)
+        self.main_view.set_statusbar_text(f'Fan control failed: {error}')
 
     def _update_current_fan_profile(self, profile: FanProfile) -> None:
         current: CurrentFanProfile = CurrentFanProfile.get_or_none()

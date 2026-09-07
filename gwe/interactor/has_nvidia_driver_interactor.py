@@ -25,7 +25,6 @@ from gwe.repository.nvidia_repository import NvidiaRepository
 
 class HasNvidiaDriverResult(Enum):
     POSITIVE = auto()
-    NV_CONTROL_MISSING = auto()
     NVML_MISSING = auto()
 
 
@@ -39,8 +38,6 @@ class HasNvidiaDriverInteractor:
         return rx.defer(lambda _: rx.just(self._has_nvidia_driver()))
 
     def _has_nvidia_driver(self) -> HasNvidiaDriverResult:
-        if not self._nvidia_repository.has_nv_control_extension():
-            return HasNvidiaDriverResult.NV_CONTROL_MISSING
         if not self._nvidia_repository.has_nvml_shared_library():
             return HasNvidiaDriverResult.NVML_MISSING
         return HasNvidiaDriverResult.POSITIVE
