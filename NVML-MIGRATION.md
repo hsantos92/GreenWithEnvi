@@ -48,6 +48,19 @@ nvidia-settings implementation. Clock controls target P0. If the second clock
 write fails, the first is rolled back; rollback errors propagate as failures.
 Fan curve values are clamped to the driver's supported fan-speed range.
 
+Fan hysteresis tracks the temperature of the last changed duty command. With a
+2 °C band, readings of 70 → 69 → 68 °C release the held duty at 68 °C even
+though each individual change is only 1 °C. Duty increases are immediate.
+Repeated worker keepalive commands do not move the temperature reference.
+Clicking Apply resets hysteresis and evaluates the selected curve immediately;
+edits to the applied curve or hysteresis setting also reset the reference.
+
+Interpolation sorts saved points by temperature. The graph and controller use
+the same endpoints, preserving saved limits such as a quiet curve ending at
+50% instead of drawing an artificial 100% endpoint. Profile records themselves
+are not rewritten.
+
+
 Flatpak controls are disabled: the native worker cannot safely be launched from
 the old sandbox packaging. This checkout's legacy Flatpak submodule/manifest
 has not been migrated or validated. Use the native launcher for this version.

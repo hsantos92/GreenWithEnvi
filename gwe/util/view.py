@@ -22,8 +22,9 @@ from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCan
 from matplotlib.colors import ColorConverter
 from matplotlib.figure import Figure
 
-from gwe.conf import MIN_TEMP, MAX_TEMP, FAN_MAX_DUTY, GRAPH_COLOR_HEX
+from gwe.conf import MIN_TEMP, MAX_TEMP, GRAPH_COLOR_HEX
 from gwe.model.fan_profile import FanProfile
+from gwe.util.fan_curve import curve_points
 
 
 def build_glib_option(long_name: str,
@@ -111,15 +112,7 @@ def init_plot_chart(scrolled_window: Gtk.ScrolledWindow,
 
 
 def get_fan_profile_data(profile: FanProfile) -> Dict[int, int]:
-    data = {p.temperature: p.duty for p in profile.steps}
-    if data:
-        # if profile.single_step:
-        #     data.update({MAX_TEMP: profile.steps[0].duty})
-        # else:
-        if MIN_TEMP not in data:
-            data[MIN_TEMP] = data[min(data.keys())]
-        data.update({MAX_TEMP: FAN_MAX_DUTY})
-    return data
+    return curve_points((step.temperature, step.duty) for step in profile.steps)
 
 
 def is_dazzle_version_supported() -> bool:

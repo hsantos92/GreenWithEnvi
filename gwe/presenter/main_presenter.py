@@ -52,6 +52,7 @@ from gwe.presenter.edit_overclock_profile_presenter import EditOverclockProfileP
 from gwe.presenter.historical_data_presenter import HistoricalDataPresenter
 from gwe.presenter.preferences_presenter import PreferencesPresenter
 from gwe.util.deployment import is_flatpak
+from gwe.util.fan_curve import FanHysteresis, interpolate
 from gwe.util.view import show_notification, open_uri, get_default_application
 
 _LOG = logging.getLogger(__name__)
@@ -143,13 +144,13 @@ class MainPresenter:
         self._setting_changed_subject = setting_changed_subject
         self._composite_disposable: CompositeDisposable = composite_disposable
         self._fan_profile_selected: Optional[FanProfile] = None
+        self._fan_hysteresis = FanHysteresis()
         self._fan_control_pending = False
         self._pending_fan_request = None
         self._fan_profile_applied: Optional[FanProfile] = None
         self._overclock_profile_selected: Optional[OverclockProfile] = None
         self._overclock_profile_applied: Optional[OverclockProfile] = None
         self._latest_status: Optional[Status] = None
-        self._previous_status: Optional[Status] = None
         self._gpu_index: int = 0
 
     def on_start(self) -> None:
@@ -185,8 +186,12 @@ class MainPresenter:
     def on_fan_apply_button_clicked(self, *_: Any) -> None:
         if self._fan_profile_selected:
             self._fan_profile_applied = self._fan_profile_selected
+            self._fan_hysteresis.reset()
+            self._pending_fan_request = None
             if self._fan_profile_selected.type == FanProfileType.AUTO.value:
                 self._set_fan_speed(self._gpu_index, manual_control=False)
+            elif self._latest_status is not None:
+                self._update_fan()
             self._refresh_fan_profile_ui(profile_id=self._fan_profile_selected.id)
             self._update_current_fan_profile(self._fan_profile_selected)
 
@@ -275,6 +280,8 @@ class MainPresenter:
 
     def _on_speed_step_list_changed(self, db_change: DbChange) -> None:
         profile: SpeedStep = db_change.entry.profile
+        if self._fan_profile_applied and self._fan_profile_applied.id == profile.id:
+            self._fan_hysteresis.reset()
         if self._fan_profile_selected and self._fan_profile_selected.id == profile.id:
             self.main_view.refresh_chart(profile)
 
@@ -298,6 +305,7 @@ class MainPresenter:
 
     def _on_setting_list_changed(self, db_change: DbChange) -> None:
         if db_change.entry.key == 'settings_hysteresis' and self._fan_profile_applied:
+            self._fan_hysteresis.reset()
             self.main_view.refresh_chart(self._fan_profile_applied)
 
     def _start_refresh(self) -> None:
@@ -314,7 +322,6 @@ class MainPresenter:
     def _on_status_updated(self, status: Optional[Status]) -> None:
         if status is not None:
             was_latest_status_none = self._latest_status is None
-            self._previous_status = self._latest_status
             self._latest_status = status
             if was_latest_status_none:
                 self._refresh_overclock_profile_ui(True)
@@ -322,6 +329,7 @@ class MainPresenter:
             self.main_view.refresh_status(status, self._gpu_index)
             self._historical_data_presenter.add_status(status, self._gpu_index)
         else:
+            self._fan_hysteresis.reset()
             self.main_view.set_statusbar_text('Unable to read GPU status')
 
     def _update_fan(self) -> None:
@@ -335,49 +343,21 @@ class MainPresenter:
                 gpu_status = self._latest_status.gpu_status_list[self._gpu_index]
                 if not self._fan_profile_applied.steps:
                     self._set_fan_speed(gpu_status.index, manual_control=False)
-                elif gpu_status.temp.gpu:
+                elif gpu_status.temp.gpu is not None:
                     try:
                         speed = round(self._get_fan_duty(self._fan_profile_applied, gpu_status.temp.gpu))
-                        if fan.manual_control and not self._should_update_fan_duty(speed) and fan.fan_list:
-                            current_duty = fan.fan_list[0][0]
-                            if current_duty is not None:
-                                speed = current_duty
+                        if not fan.manual_control:
+                            self._fan_hysteresis.reset()
+                        speed = self._fan_hysteresis.choose(
+                            gpu_status.temp.gpu, speed, self._settings_interactor.get_int('settings_hysteresis'))
                         # Refresh the worker watchdog even when hysteresis keeps the duty unchanged.
                         self._set_fan_speed(gpu_status.index, round(speed))
                     except ValueError:
                         _LOG.exception(f'Unable to parse temperature {gpu_status.temp.gpu}')
 
-    def _should_update_fan_duty(self, speed: int) -> bool:
-        fan = self._latest_status.gpu_status_list[self._gpu_index].fan
-        if not fan.fan_list or fan.fan_list[0][0] == speed:
-            return False
-        # The hysteresis value is used to avoid fan fluctuations. In a few words, when the temperature rises, the new
-        # fan duty value is applied immediately. When it lowers, the last applied fan duty value is kept until the
-        # current temperature is hysteresis degrees lower than the temperature that caused the current fan duty to be
-        # applied.
-        hysteresis = self._settings_interactor.get_int('settings_hysteresis')
-        if self._previous_status is not None and self._latest_status is not None and hysteresis != 0:
-            current_temp = self._latest_status.gpu_status_list[self._gpu_index].temp.gpu
-            previous_temp = self._previous_status.gpu_status_list[self._gpu_index].temp.gpu
-            if current_temp is None or previous_temp is None:
-                return True
-            temp_delta = current_temp - previous_temp
-            if -hysteresis <= temp_delta <= 0:
-                return False
-        return True
-
     @staticmethod
     def _get_fan_duty(profile: FanProfile, gpu_temperature: float) -> float:
-        p_1 = ([(i.temperature, i.duty) for i in profile.steps if i.temperature <= gpu_temperature] or [None])[-1]
-        p_2 = next(((i.temperature, i.duty) for i in profile.steps if i.temperature > gpu_temperature), None)
-        duty = 0.0
-        if p_1 and p_2:
-            duty = ((p_2[1] - p_1[1]) / (p_2[0] - p_1[0])) * (gpu_temperature - p_1[0]) + p_1[1]
-        elif p_1:
-            duty = float(p_1[1])
-        elif p_2:
-            duty = float(p_2[1])
-        return duty
+        return interpolate(((step.temperature, step.duty) for step in profile.steps), gpu_temperature)
 
     def _refresh_fan_profile_ui(self, init: bool = False, profile_id: Optional[int] = None) -> None:
         current: Optional[CurrentFanProfile] = None
@@ -435,6 +415,7 @@ class MainPresenter:
             self._set_fan_speed(*request)
 
     def _on_fan_control_error(self, error: Exception) -> None:
+        self._fan_hysteresis.reset()
         self._fan_control_pending = False
         self._pending_fan_request = None
         self._fan_profile_applied = None
