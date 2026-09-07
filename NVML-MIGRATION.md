@@ -3,7 +3,10 @@
 This branch replaces the X11 NV-CONTROL backend with NVML. It supports Wayland
 and X11 without Coolbits or `--ctrl-display`. The latter option is accepted as
 a deprecated no-op. GPU discovery, telemetry, clocks, fan duty and individual
-fan RPMs come from NVML. Optional unsupported sensors stay blank; driver loss
+fan RPMs come from NVML. Memory uses the v2 query: used memory matches
+`nvidia-smi` accounting on the tested driver, while reserved memory is shown
+separately in a tooltip. If v2 is unavailable, memory fields remain unavailable
+rather than silently switching to different accounting. Optional unsupported sensors stay blank; driver loss
 is treated as a refresh failure.
 
 ## Run from this checkout
