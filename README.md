@@ -18,10 +18,10 @@ remain blank. Coolbits and the X11 NV-CONTROL extension are no longer required.
 
 ## Run from source
 
-The NVML work is on `nvml-driver-compat`:
+Clone the `master` branch:
 
 ```sh
-git clone --branch nvml-driver-compat https://github.com/hsantos92/GreenWithEnvi.git
+git clone --branch master https://github.com/hsantos92/GreenWithEnvi.git
 cd GreenWithEnvi
 python3 -m venv --system-site-packages ~/.cache/gwe-dev
 ~/.cache/gwe-dev/bin/pip install -r requirements.txt
