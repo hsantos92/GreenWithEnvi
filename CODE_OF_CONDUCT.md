@@ -55,7 +55,9 @@ further defined and clarified by project maintainers.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported by contacting the project team at roberto@leinardi.com. All
+reported to the GreenWithEnvi maintainer, [hsantos92](https://github.com/hsantos92),
+using a contact method listed on their profile. Do not post sensitive incident
+details in public issues. All
 complaints will be reviewed and investigated and will result in a response that
 is deemed necessary and appropriate to the circumstances. The project team is
 obligated to maintain confidentiality with regard to the reporter of an incident.

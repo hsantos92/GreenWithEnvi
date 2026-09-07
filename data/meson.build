@@ -85,6 +85,7 @@ install_data('icons/com.leinardi.gwe-symbolic.svg',
 )
 
 contributors = '\n'.join([
+  'Hector Santos (hsantos92) — GreenWithEnvi fork and NVML modernization',
   'Roberto Leinardi (leinardi) &lt;roberto@leinardi.com&gt;',
   'Gabriele Musco (gabmus) &lt;emaildigabry@gmail.com&gt;'
 ])
@@ -94,7 +95,7 @@ EXTENSION_DIR = join_paths(get_option('prefix'), get_option('libdir'), meson.pro
 bindir = join_paths(get_option('prefix'), get_option('bindir'))
 
 glade_conf = configuration_data()
-glade_conf.set('PACKAGE_URL', 'https://gitlab.com/leinardi/gwe')
+glade_conf.set('PACKAGE_URL', 'https://github.com/hsantos92/GreenWithEnvi')
 glade_conf.set('DATA_DIR', DATA_DIR)
 glade_conf.set('EXTENSION_DIR', EXTENSION_DIR)
 glade_conf.set('LOCALE_DIR', join_paths(get_option('prefix'), get_option('datadir'), 'locale'))

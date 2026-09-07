@@ -1,321 +1,86 @@
-# GreenWithEnvy (GWE)
-GWE is a GTK system utility designed to provide information, control the fans and overclock your NVIDIA video card
-and graphics processor.
+# GreenWithEnvi (GWE)
 
-## 💡 Features
-<img src="/data/icons/hicolor/48x48@2x/apps/com.leinardi.gwe.png" width="96" align="right" hspace="0" />
+GreenWithEnvi is a GTK 3 utility for monitoring and controlling NVIDIA GPUs on
+Linux. This fork uses NVML for modern NVIDIA drivers on Wayland and X11.
 
-* Show general GPU stats (model name, driver version, gpu/memory/power usage, clocks, temps, etc)
-* GPU and Memory overclock offset profiles
-* Custom Fan curve profiles
-* Change power limit
-* Historical data graphs
+Project: [hsantos92/GreenWithEnvi](https://github.com/hsantos92/GreenWithEnvi)
 
-<img src="/art/screenshot-1.png" width="800" align="middle"/>
+## Features
 
-## 📦 How to get GWE
-If you don't like to reading manuals and/or you don't know what the Nvidia CoolBits are,
-you can watch the following How To made by [Intelligent Gaming](https://www.youtube.com/channel/UCH4d4o0Otxa7BNYs5Z5UEjg):
+- GPU temperature, utilization, memory, power, clocks, fan duty and RPM readings.
+- Saved fan curves with interpolation and cooling hysteresis.
+- GPU and memory clock-offset profiles and power-limit controls.
+- Historical graphs and an optional app indicator.
+- Authentication through polkit for controls; the desktop app runs as your user.
 
-[![How To Overclock And Control Fans On An nVidia Graphic Card In Linux - Green With Envy / GWE](https://img.youtube.com/vi/HAKe9ladLvc/0.jpg)](https://www.youtube.com/watch?v=HAKe9ladLvc)
+Available readings and controls depend on the GPU and driver. Unsupported sensors
+remain blank. Coolbits and the X11 NV-CONTROL extension are no longer required.
 
-### Install from Flathub
-This is the preferred way to get GWE on any major distribution (Arch, Fedora, Linux Mint, openSUSE, Ubuntu, etc).
+## Run from source
 
-If you don't have Flatpak installed you can find step by step instructions [here](https://flatpak.org/setup/).
+The NVML work is on `nvml-driver-compat`:
 
-Make sure to have the Flathub remote added to the current user:
-
-```bash
-flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+```sh
+git clone --branch nvml-driver-compat https://github.com/hsantos92/GreenWithEnvi.git
+cd GreenWithEnvi
+python3 -m venv --system-site-packages ~/.cache/gwe-dev
+~/.cache/gwe-dev/bin/pip install -r requirements.txt
+GWE_PYTHON=~/.cache/gwe-dev/bin/python bash scripts/run-native.sh
 ```
 
-#### Install
-```bash
-flatpak --user install flathub com.leinardi.gwe
-flatpak update # needed to be sure to have the latest org.freedesktop.Platform.GL.nvidia
-```
+Install the native dependencies first; see [NVML-MIGRATION.md](NVML-MIGRATION.md)
+for requirements, authorization behavior and validation commands. The launcher
+builds resources and runs this checkout without a system-wide install.
 
-#### Run
-```bash
-flatpak run com.leinardi.gwe
-```
-#### ⚠ Flatpak limitations
-##### Beta Drivers
-Currently [Flatpak does not support Nvidia Beta drivers](https://github.com/flathub/org.freedesktop.Platform.GL.nvidia/issues/1)
-like 396.54.09 or 415.22.05.
+The inherited Flatpak packaging has not been migrated or validated for this
+backend, and controls are disabled inside Flatpak. Existing Flathub and distro
+packages should not be assumed to contain this fork's changes.
 
-##### Bumblebee and Optimus
-Currently [Flatpak does not support Bumblebee](https://github.com/flatpak/flatpak/issues/869). If you want to use GWE with Bumblebee
-you need to install it from the source code.
+## Profiles and controls
 
-### Distro specific packages
-#### Arch Linux
-Install the `gwe` package from the AUR using your favourite helper, for example `yay -S gwe`.
+Select a fan profile and click **Apply** to evaluate it immediately. Cooling
+hysteresis accumulates from the last duty change; rising duty is applied
+immediately. The graph uses the saved curve endpoints, and requested fan duty is
+clamped to the driver's supported range. **Auto** restores firmware fan control.
 
-#### Fedora
-GWE avaliable in official Fedora [repos](https://src.fedoraproject.org/rpms/gwe) for F31+: `sudo dnf install gwe`
+Existing profiles are reused from `$XDG_CONFIG_HOME/gwe/gwe.db`, normally
+`~/.config/gwe/gwe.db`. The `gwe` package name and `com.leinardi.gwe` application
+ID remain for compatibility with existing settings and resources. This branding
+change does not migrate or overwrite profiles.
 
-For older Fedora releases you can use [COPR package](https://copr.fedorainfracloud.org/coprs/atim/gwe/): `sudo dnf copr enable atim/gwe -y && sudo dnf install gwe`
+Memory offsets use the original GWE MHz units; NVML receives twice that value
+as a memory transfer-rate offset. Clock offsets and power limits are not
+reset automatically when the app exits. See the migration notes for the fan
+worker's disconnect and timeout restoration behavior.
 
-### Install from source code
-#### Build time dependencies
-| Distro                | pkg-config         | Python 3.6+   | gobject-introspection       | meson | ninja-build | appstream-util |
-| --------------------- | ------------------ | ------------- | --------------------------- | ----- | ----------- | -------------- |
-| Arch Linux            | pkg-config         | python        | gobject-introspection       | meson | ninja       | appstream-glib |
-| Fedora                | pkgconf-pkg-config | python3-devel | gobject-introspection-devel | meson | ninja-build | appstream-util |
-| OpenSUSE              | pkgconf-pkg-config | python3-devel | gobject-introspection-devel | meson | ninja-build | appstream-glib |
-| Ubuntu                | pkg-config         | python3-dev   | libgirepository1.0-dev      | meson | ninja-build | appstream-util |
+## Command-line options
 
+| Option | Description |
+| --- | --- |
+| `-v`, `--version` | Show the version |
+| `--debug` | Enable debug logging |
+| `--hide-window` | Start with the main window hidden |
+| `--autostart-on` | Enable launch on login |
+| `--autostart-off` | Disable launch on login |
+| `--ctrl-display DISPLAY` | Deprecated compatibility option; has no effect |
 
-#### Run time dependencies
-| Distro                | Python 3.6+ | pip         | gobject-introspection       | libappindicator          | gnome-shell-extension-appindicator | libdazzle |
-| --------------------- | ----------- | ----------- | --------------------------- | ------------------------ | ---------------------------------- | --------- |
-| Arch Linux            | python      | python-pip  | gobject-introspection       | libappindicator3         | gnome-shell-extension-appindicator | libdazzle |
-| Fedora                | python3     | python3-pip | gobject-introspection-devel | libappindicator-gtk3     | gnome-shell-extension-appindicator | libdazzle |
-| OpenSUSE              | python3     | python3-pip | gobject-introspection       | libappindicator3-1       | gnome-shell-extension-appindicator | typelib-1_0-libdazzle-1_0 |
-| Ubuntu                | python3     | python3-pip | libgirepository1.0-dev      | gir1.2-appindicator3-0.1 | gnome-shell-extension-appindicator | libdazzle |
+Pass options after `scripts/run-native.sh` in the launch command above.
 
-plus all the Python dependencies listed in [requirements.txt](requirements.txt)
+## Development and support
 
-#### Clone project and install
-If you have not installed GWE yet:
-```bash
-git clone --recurse-submodules -j4 https://gitlab.com/leinardi/gwe.git
-cd gwe
-git checkout release
-sudo -H pip3 install -r requirements.txt
-meson . build --prefix /usr
-ninja -v -C build
-sudo ninja -v -C build install
-```
+Report problems and request features in the
+[GitHub issue tracker](https://github.com/hsantos92/GreenWithEnvi/issues).
+Include the commit, GPU, driver, distribution, session type and relevant logs.
+See [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md) and
+[RELEASING.md](RELEASING.md).
 
-#### Update old installation
-If you installed GWE from source code previously and you want to update it:
-```bash
-cd gwe
-git fetch
-git checkout release
-git reset --hard origin/release
-git submodule init
-git submodule update
-sudo -H pip3 install -r requirements.txt
-meson . build --prefix /usr
-ninja -v -C build
-sudo ninja -v -C build install
-```
+## Credits and license
 
-#### Run
-Once installed, to start it you can simply execute on a terminal:
-```bash
-gwe
-```
+- Hector Santos (hsantos92): GreenWithEnvi fork and NVML modernization.
+- Roberto Leinardi and Gabriele Musco: original GreenWithEnvy application.
+- tiheum: Faenza artwork used for the launcher icon.
+- NVIDIA: NVML and the `nvidia-ml-py` Python bindings.
+- Original contributors, translators, packagers, testers and bug reporters.
 
-#### ⚠ Bumblebee and Optimus
-If you want to use GWE with Bumblebee you need to start it with `optirun` and set the `--ctrl-display` parameter to `:8`:
-
-```bash
-optirun gwe --ctrl-display ":8"
-```
-
-## ℹ️ TODO
-
-- [x] Show general GPU info
-- [x] Show power info
-- [x] Show clocks info
-- [x] Show GPU temp in both app and app indicator
-- [x] Show fan info
-- [x] Allow to hide main app window
-- [x] Add command line option to start the app hidden
-- [x] Add Refresh timeout to settings
-- [x] Add command line option to add desktop entry
-- [x] About dialog
-- [x] Distributing with PyPI
-- [x] Show chart of selected fan profile
-- [x] Allow to select and apply a fan profile
-- [x] Add/Delete/Edit multi speed fan profiles (fan curve)
-- [x] Add option to restore last applied fan profile on app startup
-- [x] Find better icons for app indicator
-- [x] Try to lower resource consumption (mostly caused by `nvidia-settings` invocations)
-- [x] Show historical data of most important values in a separate dialog (requires GTK 3.24/GNOME 3.30)
-- [x] Add overclock profiles
-- [x] Add option to restore last applied overclock profile on app startup
-- [ ] Disable unsupported preferences
-- [x] Distributing with Flatpak
-- [x] Publishing on Flathub
-- [ ] Distributing with Snap
-- [x] Check if NV-CONTROL is available and tell the user if is not
-- [ ] Add support for multi-GPU
-- [ ] Allow to select profiles from app indicator
-- [ ] Add support for i18n (internationalization and localization)
-
-<!--
-## Application entry
-To add a desktop entry for the application run the following command (not supported by Flatpak):
-```bash
-gwe --application-entry
-```
-If you don't want to create this custom rule you can run gwe as root
-(using sudo) but we advise against this solution.
--->
-## ⌨️ Command line options
-
-  | Parameter                 | Description                               | Source | Flatpak |
-  |---------------------------|-------------------------------------------|:------:|:-------:|
-  |-v, --version              |Show the app version                       |    x   |    x    |
-  |--debug                    |Show debug messages                        |    x   |    x    |
-  |--hide-window              |Start with the main window hidden          |    x   |    x    |
-  |--ctrl-display DISPLAY     |Specify the NV-CONTROL display             |    x   |    x    |
-  |--autostart-on             |Enable automatic start of the app on login |    x   |         |
-  |--autostart-off            |Disable automatic start of the app on login|    x   |         |
-
-## 🖥️ Build, install and run with Flatpak
-If you don't have Flatpak installed you can find step by step instructions [here](https://flatpak.org/setup/).
-
-Make sure to have the Flathub remote added to the current user:
-
-```bash
-flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-```
-
-### Clone the repo
-```bash
-git clone --recurse-submodules -j4 https://gitlab.com/leinardi/gwe.git
-```
-It is possible to build the local source or the remote one (the same that Flathub uses)
-### Local repository
-```bash
-./build.sh --flatpak-local --flatpak-install
-```
-### Remote repository
-```bash
-./build.sh --flatpak-remote --flatpak-install
-```
-### Run
-```bash
-flatpak run com.leinardi.gwe --debug
-```
-
-## ❓ FAQ
-### I see some message about CoolBits in the Overclock/Fan profile section, what's that?
-Coolbits was a Windows registry hack for Nvidia graphics cards Windows drivers, that allows
-tweaking features via the Nvidia driver control panel.
-Something similar is available also on Linux and is the only way to enable Overclock and manual Fan control.
-To know more about Coolbits and how to enable them click
-[here](https://wiki.archlinux.org/index.php/NVIDIA/Tips_and_tricks#Enabling_overclocking)
-(to enable both OC and Fan control you need to set it to `12`).
-
-### The Flatpak version of GWE is not using my theme, how can I fix it?
-To fix this issue install a Gtk theme from Flathub. This way, Flatpak applications will automatically pick the
-installed Gtk theme and use that instead of Adwaita.
-
-Use this command to get a list of all the available Gtk themes on Flathub:
-```bash
-flatpak --user remote-ls flathub | grep org.gtk.Gtk3theme
-```
-And then just install your preferred theme. For example, to install Yaru:
-```
-flatpak install flathub org.gtk.Gtk3theme.Yaru
-```
-
-### I have installed the app using Flatpak, but all the GWE fields are empty
-This issue can be usually solved by closing GWE, executing `flatpak update` and starting GWE again.
-This is necessary to be sure to have the latest [org.freedesktop.Platform.GL.nvidia](https://github.com/flathub/org.freedesktop.Platform.GL.nvidia).
-If, after the update, all the fields are still empty, feel free to open a new issue on the project tracker.
-
-### Why the memory overclock offsets effectively applied does not match the one set in the Nvidia Settings app?
-Because Memory Transfer Rate, what Nvidia Settings reports and changes,
-is different from the effective Memory Clock, what is actually being
-displayed by GWE. It is also what other Windows applications like MSI Afterburner show.
-The Memory Transfer Rate is simply double the Memory Clock.
-
-### Where are the settings and profiles stored on the filesystem?
-| Installation type |                     Location                     |
-|-------------------|:------------------------------------------------:|
-| Flatpak           |        `$HOME/.var/app/com.leinardi.gwe/`        |
-| Source code       | `$XDG_CONFIG_HOME` (usually `$HOME/.config/gwe`) |
-
-### GreenWithEnvy, why using such name?
-The name comes from the slogan of the GeForce 8 series, that was "Green with envy".
-Nvidia is meant to be pronounced "invidia", which means envy in Latin (and Italian). And their logo is green so, GreenWithEnvy
-
-## 💚 How to help the project
-### Help is needed for the following topics
- - Snap (see [#18](https://gitlab.com/leinardi/gwe/issues/18))
- - Getting current GTK theme text color (see [#36](https://gitlab.com/leinardi/gwe/issues/36))
- - Making Bumblebee work with Flatpak (see [#35](https://gitlab.com/leinardi/gwe/issues/35))
-
-### Discord server
-If you want to help testing or developing it would be easier to get in touch using the discord server of the project: https://discord.gg/xBybdRt
-Just write a message on the general channel saying how you want to help (test, dev, etc) and quoting @leinardi. If you don't use discor but still want to help just open a new issue here.
-
-
-### Can I support this project some other way?
-
-Something simple that everyone can do is to star it on both [GitLab](https://gitlab.com/leinardi/gwe) and [GitHub](https://github.com/leinardi/gwe).
-Feedback is always welcome: if you found a bug or would like to suggest a feature,
-feel free to open an issue on the [issue tracker](https://gitlab.com/leinardi/gwe/issues).
-
-## ⚠ Dropped PyPI support
-Development builds were previously distributed using PyPI. This way of distributing the software is simple
-but requires the user to manually install all the non Python dependencies like cairo, glib, appindicator3, etc.
-The current implementation of the historical data uses a new library, Dazzle, that requires Gnome 3.30 which is
-available, using Python Object introspection, only starting from Ubuntu 18.10 making the latest Ubuntu LTS, 18.04,
-unsupported.
-A solution for all this problems is distributing the app via Flatpak, since with it all the dependencies
-will be bundled and provided automatically, making possible to use Gnome 3.30 features also on distributions
-using an older version of Gnome.
-
-**No new build will be published on PyPI**.
-
-### Uninstall pip version
-If you have already installed GWE via `pip`, please make sure to uninstall it completely before moving to a newer version:
-
-```bash
-pip3 uninstall gwe
-rm -rf ~/.config/gwe
-```
-
-## ℹ️ Acknowledgements
-Thanks to:
-
- - GabMus and TingPing for the huge help with Flatpak
- - @999eagle for maintaining the [AUR package](https://aur.archlinux.org/packages/gwe/)
- - @tim74 for maintaining the [COPR package](https://copr.fedorainfracloud.org/coprs/atim/gwe/)
- - Lighty for moderating the [Discord](https://discord.gg/YjPdNff) server
- - fbcotter for the [py3nvml](https://github.com/fbcotter/py3nvml/) library
- - all the devs of the [python-xlib](https://github.com/python-xlib/python-xlib/) library
- - tiheum for the [Faenza](https://www.deviantart.com/tiheum/art/Faenza-Icons-173323228) icons set, from which I took the current GWE launcher icon
- - all the people that helped testing and reported bugs
-
-## 📰 Media coverage
- - [OMG! Ubuntu](https://www.omgubuntu.co.uk/2019/02/easily-overclock-nvidia-gpu-on-linux-with-this-new-app) 🇬🇧
- - [GamingOnLinux](https://www.gamingonlinux.com/articles/greenwithenvy-an-impressive-tool-for-overclocking-nvidia-gpus.13521) 🇬🇧
- - [Phoronix](https://www.phoronix.com/scan.php?page=news_item&px=GreenWithEnvy-0.11-Released) 🇬🇧
- - [ComputerBase](https://www.computerbase.de/2019-02/green-envy-uebertakten-nvidia-grafikkarten-linux/) 🇩🇪
- - [lffl](https://www.lffl.org/2019/02/overclock-scheda-nvidia-linux.html) 🇮🇹
- - [osside blog](https://www.osside.net/2019/02/greenwithenvy-gwe-linux-easy-nvidia-status-overclock/) 🇮🇹
- - [Diolinux](https://www.diolinux.com.br/2019/02/greenwithenvy-uma-nova-forma-de-voce-gerenciar-gpu-nvidia.html?m=1) 🇧🇷
- - [Blog do Edivaldo](https://www.edivaldobrito.com.br/overclock-em-gpus-nvidia-no-linux/) 🇧🇷
- - [Linux Adictos](https://www.linuxadictos.com/greenwithenvy-programa-para-overclocking-en-gpus-nvidia.html) 🇪🇸
-
-
-## 📝 License
-```
-This file is part of gwe.
-
-Copyright (c) 2019 Roberto Leinardi
-
-gwe is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-gwe is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with gwe.  If not, see <http://www.gnu.org/licenses/>.
-```
+GreenWithEnvi continues the original project under
+[GPL-3.0-or-later](COPYING.txt). Original copyright notices are retained.

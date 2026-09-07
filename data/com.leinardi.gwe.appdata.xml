@@ -4,28 +4,27 @@
     <id>com.leinardi.gwe.desktop</id>
 
     <!-- <translation type="gettext">trg</translation> -->
-    <name>GreenWithEnvy</name>
-    <developer_name>Roberto Leinardi</developer_name>
+    <name>GreenWithEnvi</name>
+    <developer_name>Hector Santos and the original GWE contributors</developer_name>
     <summary>System utility designed to provide information, control the fans and overclock your NVIDIA card</summary>
     <metadata_license>CC0-1.0</metadata_license>
     <project_license>GPL-3.0-or-later</project_license>
     <description>
-        <p>GWE is a GTK system utility designed to provide information, control the fans and overclock your NVIDIA video
+        <p>GreenWithEnvi is an NVML-based GTK system utility designed to provide information, control the fans and overclock your NVIDIA video
             card and graphics processor.
         </p>
     </description>
     <launchable type="desktop-id">com.leinardi.gwe.desktop</launchable>
     <screenshots>
         <screenshot type="default">
-            <image>https://gitlab.com/leinardi/gwe/raw/release/art/screenshot-1.png</image>
+            <image>https://github.com/hsantos92/GreenWithEnvi/raw/nvml-driver-compat/art/screenshot-1.png</image>
         </screenshot>
     </screenshots>
     <categories>
         <category>Utility</category>
     </categories>
-    <url type="homepage">https://gitlab.com/leinardi/gwe</url>
-    <url type="bugtracker">https://gitlab.com/leinardi/gwe/issues</url>
-    <update_contact>roberto@leinardi.com</update_contact>
+    <url type="homepage">https://github.com/hsantos92/GreenWithEnvi</url>
+    <url type="bugtracker">https://github.com/hsantos92/GreenWithEnvi/issues</url>
     <releases>
         <release date="2022-04-01" version="0.15.5">
             <description>

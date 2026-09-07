@@ -30,7 +30,6 @@ endif
 dependency('gobject-introspection-1.0', version: '>= 1.56.0')
 
 install_subdir('gwe', install_dir: PYTHON_DIR)
-install_subdir('python-xlib/Xlib', install_dir: join_paths(PYTHON_DIR, 'gwe'))
 subdir('data')
 subdir('bin')
 
