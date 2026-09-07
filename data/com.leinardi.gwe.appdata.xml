@@ -26,6 +26,17 @@
     <url type="homepage">https://github.com/hsantos92/GreenWithEnvi</url>
     <url type="bugtracker">https://github.com/hsantos92/GreenWithEnvi/issues</url>
     <releases>
+        <release date="2026-09-07" version="0.20.0">
+            <description>
+                <ul>
+                    <li>Use NVML for modern NVIDIA drivers on Wayland and X11.</li>
+                    <li>Add authenticated fan, clock-offset and power controls.</li>
+                    <li>Fix fan-curve hysteresis and immediate profile application.</li>
+                    <li>Use NVML v2 memory reporting with a reserved-memory tooltip.</li>
+                    <li>Update GreenWithEnvi branding, credits, documentation and GitHub links.</li>
+                </ul>
+            </description>
+        </release>
         <release date="2022-04-01" version="0.15.5">
             <description>
                 <ul>

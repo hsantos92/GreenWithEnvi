@@ -1,6 +1,9 @@
 # GreenWithEnvi changelog
 
-## Unreleased
+## Version 0.20.0 — 2026-09-07
+
+- Use NVML v2 memory accounting to match `nvidia-smi`, with driver-reserved
+  memory shown separately in the memory field tooltip.
 
 - Replace NV-CONTROL with NVML for modern NVIDIA drivers and Wayland.
 - Add authenticated fan, clock-offset and power controls with fan restoration

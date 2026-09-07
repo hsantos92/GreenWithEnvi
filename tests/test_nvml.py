@@ -14,6 +14,28 @@ from gwe.interactor.has_nvidia_driver_interactor import HasNvidiaDriverInteracto
 
 
 class NvmlTests(unittest.TestCase):
+    def test_memory_v2_reports_used_and_reserved_separately(self):
+        mib = 1048576
+        memory = SimpleNamespace(total=24564 * mib, used=3548 * mib + 123,
+                                 reserved=488 * mib)
+        def sensor(function, *args):
+            if function is nvml.nvmlDeviceGetMemoryInfo:
+                self.assertEqual(args, ('handle', nvml.nvmlMemory_v2))
+                return memory
+            return None
+        with patch('gwe.repository.nvidia_repository.query', side_effect=sensor):
+            info = NvidiaRepository()._get_gpu_status(0, 'handle', 'GPU-test').info
+        self.assertEqual(info.memory_used, 3548)
+        self.assertEqual(info.memory_reserved, 488)
+        self.assertEqual(info.memory_total, 24564)
+
+    def test_unavailable_memory_v2_does_not_break_status(self):
+        with patch('gwe.repository.nvidia_repository.query', return_value=None):
+            info = NvidiaRepository()._get_gpu_status(0, 'handle', 'GPU-test').info
+        self.assertIsNone(info.memory_used)
+        self.assertIsNone(info.memory_reserved)
+        self.assertIsNone(info.memory_total)
+
     def test_wayland_startup_needs_only_nvml(self):
         repo = MagicMock(spec=['has_nvml_shared_library'])
         repo.has_nvml_shared_library.return_value = True

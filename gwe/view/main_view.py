@@ -271,6 +271,10 @@ class MainView(MainViewInterface):
             self._set_entry_text(self._info_memory_entry, "{} MiB / {} MiB",
                                  gpu_status.info.memory_used,
                                  gpu_status.info.memory_total)
+            reserved = gpu_status.info.memory_reserved
+            self._info_memory_entry.set_tooltip_text(
+                f"Driver-reserved memory: {reserved} MiB" if reserved is not None
+                else "Driver-reserved memory: unavailable")
             self._set_entry_text(self._info_memory_usage_entry, "{}%", gpu_status.info.memory_usage)
             self._set_entry_text(self._info_gpu_usage_entry, "{}%", gpu_status.info.gpu_usage)
             self._set_entry_text(self._info_encoder_usage_entry, "{}%", gpu_status.info.encoder_usage)

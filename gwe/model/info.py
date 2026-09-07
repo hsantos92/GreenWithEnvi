@@ -34,7 +34,8 @@ class Info:
                  memory_usage: Optional[int] = None,
                  gpu_usage: Optional[int] = None,
                  encoder_usage: Optional[int] = None,
-                 decoder_usage: Optional[int] = None
+                 decoder_usage: Optional[int] = None,
+                 memory_reserved: Optional[int] = None
                  ) -> None:
         self.name: Optional[str] = name
         self.vbios: Optional[str] = vbios
@@ -47,6 +48,7 @@ class Info:
         self.uuid: Optional[str] = uuid
         self.memory_total: Optional[int] = memory_total
         self.memory_used: Optional[int] = memory_used
+        self.memory_reserved: Optional[int] = memory_reserved
         self.memory_interface: Optional[int] = memory_interface
         self.memory_usage: Optional[int] = memory_usage
         self.gpu_usage: Optional[int] = gpu_usage

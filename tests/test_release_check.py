@@ -19,14 +19,14 @@ class ReleaseCheckTests(unittest.TestCase):
         return result
 
     def test_new_release_with_optional_v_prefix(self):
-        for tag in ('0.16.0', 'v0.16.0'):
-            self.assertEqual(str(self.check(tag)), '0.16.0')
+        for tag in ('0.21.0', 'v0.21.0'):
+            self.assertEqual(str(self.check(tag)), '0.21.0')
 
     def test_no_published_release(self):
         self.assertIsNone(self.check(status=404))
 
     def test_old_or_current_release(self):
-        for tag in ('0.15.4', '0.15.5'):
+        for tag in ('0.15.5', '0.20.0'):
             self.assertIsNone(self.check(tag))
 
     def test_invalid_or_prerelease_tag(self):

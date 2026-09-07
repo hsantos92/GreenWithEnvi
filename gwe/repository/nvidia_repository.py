@@ -111,7 +111,7 @@ class NvidiaRepository:
             return None
 
     def _get_gpu_status(self, index: int, handle: Any, uuid: str) -> GpuStatus:
-        memory = query(nvml.nvmlDeviceGetMemoryInfo, handle)
+        memory = query(nvml.nvmlDeviceGetMemoryInfo, handle, nvml.nvmlMemory_v2)
         util = query(nvml.nvmlDeviceGetUtilizationRates, handle)
         encoder = query(nvml.nvmlDeviceGetEncoderUtilization, handle)
         decoder = query(nvml.nvmlDeviceGetDecoderUtilization, handle)
@@ -127,6 +127,7 @@ class NvidiaRepository:
             memory_interface=query(nvml.nvmlDeviceGetMemoryBusWidth, handle),
             memory_total=memory.total // 1048576 if memory else None,
             memory_used=memory.used // 1048576 if memory else None,
+            memory_reserved=memory.reserved // 1048576 if memory else None,
             memory_usage=util.memory if util else None, gpu_usage=util.gpu if util else None,
             encoder_usage=encoder[0] if encoder else None, decoder_usage=decoder[0] if decoder else None)
         limits = query(nvml.nvmlDeviceGetPowerManagementLimitConstraints, handle)
