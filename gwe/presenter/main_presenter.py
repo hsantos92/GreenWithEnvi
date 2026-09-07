@@ -530,8 +530,10 @@ class MainPresenter:
             self.main_view.show_main_infobar_message(message, True)
             message = f"Version {version} is available! " \
                       f"Click here to see what's new: {self._get_changelog_uri(version)}"
-            show_notification("GWE update available!", message, APP_ID)
+            show_notification(f"{APP_NAME} update available!", message, APP_ID)
 
     @staticmethod
-    def _get_changelog_uri(version: str = APP_VERSION) -> str:
-        return f"{APP_SOURCE_URL}/blob/{version}/CHANGELOG.md"
+    def _get_changelog_uri(version: str = "") -> str:
+        if version:
+            return f"{APP_SOURCE_URL}/releases/latest"
+        return f"{APP_SOURCE_URL}/blob/nvml-driver-compat/CHANGELOG.md"

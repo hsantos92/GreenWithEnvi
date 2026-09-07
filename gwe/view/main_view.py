@@ -181,7 +181,7 @@ class MainView(MainViewInterface):
                 .new(APP_ID, '', AppIndicator3.IndicatorCategory.HARDWARE)
             # Set the actual icon by name. If the App is not installed system-wide, the icon won't show up,
             # otherwise it will show up correctly. The set_icon_full() function needs a description for accessibility
-            # purposes. I gave it the APP_NAME (should be 'gwe', maybe change it to 'GreenWithEnvy' in the future)
+            # purposes, so use the application display name.
             self._app_indicator.set_icon_full(APP_ICON_NAME_SYMBOLIC, APP_NAME)
             if self._settings_interactor.get_bool('settings_show_app_indicator'):
                 self._app_indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)

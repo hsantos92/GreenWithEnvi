@@ -1,4 +1,4 @@
-# Native NVML backend
+# GreenWithEnvi native NVML backend
 
 This branch replaces the X11 NV-CONTROL backend with NVML. It supports Wayland
 and X11 without Coolbits or `--ctrl-display`. The latter option is accepted as
@@ -84,7 +84,9 @@ limitations remain outside these backend checks.
 Tested with an RTX 4090, NVIDIA 610.57.04, Wayland, Python 3.14, PyGObject
 3.56.3 and matplotlib 3.11.1. Live monitoring and the GTK window were verified.
 Control writes, range validation, rollback and watchdog restoration are tested
-with mocked NVML; real GPU clock, fan and power writes have not been exercised.
+with mocked NVML. The user reported the application working on this system;
+physical fan tracking under load and GPU clock/power writes have not been
+independently verified.
 
 References:
 - NVIDIA 570 transition: https://www.nvidia.com/en-gb/drivers/details/240605/

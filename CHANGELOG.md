@@ -1,3 +1,22 @@
+# GreenWithEnvi changelog
+
+## Unreleased
+
+- Replace NV-CONTROL with NVML for modern NVIDIA drivers and Wayland.
+- Add authenticated fan, clock-offset and power controls with fan restoration
+  on worker disconnect or timeout.
+- Fix gradual-cooling hysteresis and immediately evaluate newly applied curves.
+- Match fan graphs to saved curve endpoints without rewriting profiles.
+- Add a native launcher and regression coverage for the NVML backend and fan curves.
+- Rename the interface and desktop entries to GreenWithEnvi; update About credits
+  and project, changelog and release-check links to the GitHub fork.
+- Replace obsolete installation and release instructions with the native workflow.
+
+## Original project release history
+
+The entries below describe historical GreenWithEnvy releases, including features
+and packaging that may not apply to the NVML fork.
+
 Version 0.15.5
 ==============
 Released: 2022-04-01

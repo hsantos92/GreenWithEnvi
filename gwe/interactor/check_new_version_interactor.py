@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with gst.  If not, see <http://www.gnu.org/licenses/>.
-import json
+import re
 import logging
 from distutils.version import LooseVersion
 from typing import Optional
@@ -24,14 +24,14 @@ import rx
 from injector import singleton, inject
 from rx import Observable
 
-from gwe.conf import APP_ID, APP_VERSION
+from gwe.conf import APP_VERSION
 
 _LOG = logging.getLogger(__name__)
 
 
 @singleton
 class CheckNewVersionInteractor:
-    URL_PATTERN = 'https://flathub.org/api/v1/apps/{package}'
+    RELEASE_URL = 'https://api.github.com/repos/hsantos92/GreenWithEnvi/releases/latest'
 
     @inject
     def __init__(self) -> None:
@@ -42,10 +42,16 @@ class CheckNewVersionInteractor:
         return rx.defer(lambda _: rx.just(self._check_new_version()))
 
     def _check_new_version(self) -> Optional[LooseVersion]:
-        req = requests.get(self.URL_PATTERN.format(package=APP_ID))
-        version = LooseVersion("0")
-        if req.status_code == requests.codes.ok:
-            j = json.loads(req.text)
-            current_release_version = j.get('currentReleaseVersion', "0.0.0")
-            version = LooseVersion(current_release_version)
-        return version if version > LooseVersion(APP_VERSION) else None
+        try:
+            req = requests.get(self.RELEASE_URL, timeout=10)
+            if req.status_code == 404:  # No published release yet.
+                return None
+            req.raise_for_status()
+            tag = req.json().get('tag_name', '')
+            if not isinstance(tag, str) or not re.fullmatch(r'v?\d+\.\d+\.\d+', tag):
+                return None
+            version = LooseVersion(tag.removeprefix('v'))
+            return version if version > LooseVersion(APP_VERSION) else None
+        except (requests.RequestException, ValueError, AttributeError):
+            _LOG.warning("Unable to check GreenWithEnvi releases", exc_info=True)
+            return None

@@ -1,20 +1,25 @@
-# Contributing
-Considering that this project is actively maintained, contributions of all types are welcome.
+# Contributing to GreenWithEnvi
 
+Use the [GitHub repository](https://github.com/hsantos92/GreenWithEnvi) for
+issues and pull requests. The NVML implementation is on `nvml-driver-compat`.
 
-## Opening issues
-Open a new issue when:
-- you notice an unwanted behavior
-- you want a new feature implemented
-- you have just some doubts
+## Reporting problems
 
-To open a new issue, please use the provided issue template and fill it out as much as possible.
-If you are interested to an existing issue, feel free to comment the issue or subscribe to it.
+Include the commit or version, Linux distribution, desktop, Wayland or X11
+session, GPU model, NVIDIA driver version, steps to reproduce, expected behavior
+and terminal output from running with `--debug`. For control failures, include
+the authentication result and driver error. Remove private information from logs.
 
+## Development
 
-## Submitting pull requests
-If you want to fix a bug or implement a new feature, feel free to submit a new pull request.
-To submit a pull request, you have to fork this repository and fill the PR template.
-When you want to submit a pull request, remember to:
-- follow this project's code style
-- check for PyLint and Mypy errors
+Follow [NVML-MIGRATION.md](NVML-MIGRATION.md) to set up the native environment
+and run unit tests, backend type checks and Pylint error checks. Build resources
+with `ninja -C build/native` after the initial Meson setup. Follow the existing
+Python style and add regression coverage for behavior changes.
+
+GPU control tests use mocked NVML. Report real hardware validation separately,
+including GPU, driver and operations exercised. Do not describe mocked writes
+as verified physical fan, clock or power changes.
+
+Keep documentation and [CHANGELOG.md](CHANGELOG.md) current. Preserve existing
+profile compatibility and original copyright and contributor attribution.

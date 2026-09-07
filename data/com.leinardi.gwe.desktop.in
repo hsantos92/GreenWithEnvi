@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=GreenWithEnvy
+Name=GreenWithEnvi
 Comment=Provides information, controls the fans and overclocks your NVIDIA video card
 Exec=@bindir@/gwe %U
 Icon=com.leinardi.gwe

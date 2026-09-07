@@ -1,18 +1,20 @@
-# Releasing
+# Releasing GreenWithEnvi
 
-1. Bump the `APP_VERSION` property in `gwe/conf.py` based on Major.Minor.Patch naming scheme
-2. Update `data/com.leinardi.gwe.appdata.xml` for the impending release.
-3. Run `./build.sh` to update the CHANGELOG.md
-4. `flatpak run --env=G_DEBUG=fatal-criticals org.freedesktop.appstream-glib validate data/com.leinardi.gwe.appdata.xml`
-5. Update the `README.md` with the new changes (if necessary).
-6. `git commit -am "Prepare for release X.Y.Z"` (where X.Y.Z is the version you set in step 1)
-7. `flatpak uninstall com.leinardi.gwe --assumeyes; ./build.sh --flatpak-local --flatpak-install --flatpak-bundle && flatpak run com.leinardi.gwe --debug`
-8. Tag version `X.Y.Z` (`git tag -s X.Y.Z`) (where X.Y.Z is the version you set in step 1)
-9. Update tag and SHA in `flatpak/com.leinardi.gwe.json`
-10. `git push --follow-tags` 
-11. Trigger Flathub build bot `cd flatpak && git commit -am "Release X.Y.Z" && git push` (where X.Y.Z is the version you set in step 1)
-12. Make a PR to the Flathub repository master, test the build and, if OK, merge the PR (https://github.com/flathub/com.leinardi.gwe)
-13. `git commit -am "Release X.X.X" && git push` (where X.Y.Z is the version you set in step 1)
-14. Create a PR from [master](../../tree/master) to [release](../../tree/release)
-15. Using the "Edit release note" button, add the changelog items to the newly created tag on GitLab to make it an official Release (https://gitlab.com/leinardi/gkraken/-/tags)
-16. Announce the new release on the App's Discord channel
+Releases belong to [hsantos92/GreenWithEnvi](https://github.com/hsantos92/GreenWithEnvi/releases).
+The native NVML changes are currently documented under **Unreleased**.
+
+1. Run the checks in [NVML-MIGRATION.md](NVML-MIGRATION.md) and build native resources.
+2. Verify the GTK window, About credits, project links and desktop launcher.
+   Record hardware control testing separately from mocked regression results.
+3. Choose a version and update `APP_VERSION` in `gwe/conf.py`.
+4. Move the relevant Unreleased changelog entries into a dated release section
+   and add matching release metadata to `data/com.leinardi.gwe.appdata.xml`.
+5. Check that README branch instructions match the branch being released.
+6. Commit the release preparation, create the version tag, and push the commit
+   and tag when ready to publish.
+7. Create a GitHub Release for that tag with the changelog entries, native launch
+   instructions, tested hardware and known limitations.
+
+The old Flathub build-bot and GitLab release workflow do not publish this fork.
+Do not advertise Flatpak controls until the packaging and authorization path
+have been migrated and validated.
