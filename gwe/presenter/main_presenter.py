@@ -536,4 +536,4 @@ class MainPresenter:
     def _get_changelog_uri(version: str = "") -> str:
         if version:
             return f"{APP_SOURCE_URL}/releases/latest"
-        return f"{APP_SOURCE_URL}/blob/nvml-driver-compat/CHANGELOG.md"
+        return f"{APP_SOURCE_URL}/blob/master/CHANGELOG.md"

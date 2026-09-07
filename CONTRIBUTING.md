@@ -1,7 +1,7 @@
 # Contributing to GreenWithEnvi
 
 Use the [GitHub repository](https://github.com/hsantos92/GreenWithEnvi) for
-issues and pull requests. The NVML implementation is on `nvml-driver-compat`.
+issues and pull requests. Target `master` when submitting changes.
 
 ## Reporting problems
 
