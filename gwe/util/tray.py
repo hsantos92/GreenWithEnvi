@@ -4,6 +4,9 @@ Hosts choose the gesture: GNOME AppIndicator uses double/middle click; other
 hosts commonly send Activate for a single primary click.
 """
 import logging
+import os
+import shutil
+import subprocess
 from pathlib import Path
 from xdg.BaseDirectory import xdg_data_home
 import gi
@@ -111,7 +114,14 @@ class Indicator:
                 if not target.is_file() or target.read_bytes() != content:
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(content)
-            except OSError:
+                theme_root = target.parents[2]
+                cache = theme_root / 'icon-theme.cache'
+                updater = shutil.which('gtk-update-icon-cache')
+                if updater and (not cache.exists() or cache.stat().st_mtime < target.stat().st_mtime):
+                    subprocess.run([updater, '-f', '-t', str(theme_root)], check=True,
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=10)
+                    os.utime(theme_root, None)
+            except (OSError, subprocess.SubprocessError):
                 _LOG.warning('Could not install native tray icon', exc_info=True)
         self._change('IconThemePath', '')
         self._change('IconName', icon)
