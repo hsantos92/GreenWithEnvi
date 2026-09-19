@@ -53,6 +53,20 @@ as a memory transfer-rate offset. Clock offsets and power limits are not
 reset automatically when the app exits. See the migration notes for the fan
 worker's disconnect and timeout restoration behavior.
 
+## Start at login
+
+Enable launch on login in Preferences, or run the native launcher with
+`--autostart-on`. Native startup entries use the checkout launcher and its
+Python environment, so they do not require a system-installed `gwe` command.
+Toggle the preference off and on to refresh an older startup entry.
+
+The app starts hidden as your normal user. Applying a saved custom fan profile
+still requires polkit authentication; logging in does not authorize GPU controls.
+Keep the app running to follow the curve. Quitting restores firmware fan control.
+No passwordless root policy is installed: the current worker and Python environment
+are user-writable. Unattended authorization needs a separately installed,
+root-owned helper and a narrowly scoped policy.
+
 ## Command-line options
 
 | Option | Description |

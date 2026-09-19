@@ -1,5 +1,11 @@
 # GreenWithEnvi changelog
 
+## Unreleased
+
+- Fix native launch-on-login entries to preserve the checkout launcher and Python
+  environment; refresh stale commands when the startup preference changes.
+- Document startup authentication and fan-control behavior.
+
 ## Version 0.20.0 — 2026-09-07
 
 - Use NVML v2 memory accounting to match `nvidia-smi`, with driver-reserved
