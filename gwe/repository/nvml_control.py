@@ -1,7 +1,8 @@
 """NVML controls and the authenticated, pipe-scoped control worker.
 
-Executed with Python -I: only the standard library and installed nvidia-ml-py
-are imported, never GWE's UI. No passwordless polkit rule is installed.
+The authenticated development worker uses Python -I. The optional root-owned
+system helper uses -I -S and its own trusted nvidia-ml-py copy. Neither imports
+the UI. See CONTROL-HELPER.md for the optional authorization policy.
 """
 import ctypes
 import json

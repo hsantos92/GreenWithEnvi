@@ -15,8 +15,12 @@ class NvmlWorker:
     def __init__(self, uuid: str) -> None:
         if is_flatpak():
             raise RuntimeError('GPU controls require a native GWE installation; monitoring works in Flatpak.')
-        script = str(Path(__file__).with_name('nvml_control.py'))
-        command = [sys.executable, '-I', script, uuid]
+        helper = Path('/usr/local/libexec/greenwithenvi-control')
+        if helper.is_file():
+            command = [str(helper), uuid]
+        else:
+            script = str(Path(__file__).with_name('nvml_control.py'))
+            command = [sys.executable, '-I', script, uuid]
         if os.geteuid() != 0:
             command.insert(0, 'pkexec')
         self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,

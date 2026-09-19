@@ -28,12 +28,10 @@ from gwe.interactor.settings_interactor import SettingsInteractor
 from gwe.model.status import Status
 from gwe.util.deployment import is_flatpak
 from gwe.model.fan_profile import FanProfile
+from gwe.util.window_state import WindowState
 
-try:  # AppIndicator3 may not be installed
-    import gi
-
-    gi.require_version('AppIndicator3', '0.1')
-    from gi.repository import AppIndicator3
+try:
+    from gwe.util import tray as AppIndicator3
 except (ImportError, ValueError):
     AppIndicator3 = None
 from gwe.di import MainBuilder
@@ -170,6 +168,15 @@ class MainView(MainViewInterface):
         self._about_dialog.connect("delete-event", hide_on_delete)
         self._about_dialog.connect("response", hide_on_delete)
 
+    def restore_window_state(self) -> None:
+        self._window_state = WindowState(self._window, self._settings_interactor)
+
+    def save_window_state(self) -> None:
+        if hasattr(self, '_window_state'):
+            self._window_state.flush()
+        if self._app_indicator:
+            self._app_indicator.close()
+
     def show(self) -> None:
         self._presenter.on_start()
         self._init_app_indicator()
@@ -187,6 +194,7 @@ class MainView(MainViewInterface):
                 self._app_indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
             else:
                 self._app_indicator.set_status(AppIndicator3.IndicatorStatus.PASSIVE)
+            self._app_indicator.activate = self.toggle_window_visibility
             self._app_indicator.set_menu(self._main_menu)
 
     def show_main_infobar_message(self, message: str, markup: bool = False) -> None:
@@ -200,7 +208,7 @@ class MainView(MainViewInterface):
         if self._window.props.visible:
             self._window.hide()
         else:
-            self._window.show()
+            self._window.present()
 
     def get_power_limit(self) -> Tuple[int, int]:
         return 0, int(round(self._power_limit_adjustment.get_value()))

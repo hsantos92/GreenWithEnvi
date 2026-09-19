@@ -33,9 +33,11 @@ The Python dependency ranges allow current system GTK and matplotlib packages;
 Applying a setting starts a small worker through `pkexec`; the GTK application
 continues to run as the desktop user. Each worker is bound to one GPU UUID.
 It accepts only fan, automatic fan, clock-offset and power-limit commands.
-Values are validated against driver limits. There is no passwordless polkit
-rule. Authentication authorizes this checkout's worker and Python environment;
-use a trusted checkout and environment, as with any program run through pkexec.
+Values are validated against driver limits. By default authentication authorizes
+this checkout's worker and Python environment; use a trusted checkout and
+environment. The optional [system helper](CONTROL-HELPER.md) installs root-owned
+copies and a narrow polkit rule for passwordless control from one active local
+user. When present, the app uses that helper instead of development Python.
 
 Fan curves refresh the worker within the UI's 1–10 second refresh interval.
 The worker attempts to restore firmware fan control on disconnect, error, or

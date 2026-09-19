@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Preserve symbolic tray icon recoloring through the desktop icon theme.
+
+- Add an optional root-owned GPU helper and narrowly scoped passwordless polkit
+  authorization for one active local user.
+- Save the main window size and maximized state across launches.
+- Replace the Show/Hide tray menu item with StatusNotifier activation; the desktop
+  determines the gesture (double-click/middle-click on GNOME AppIndicator).
+
 - Fix native launch-on-login entries to preserve the checkout launcher and Python
   environment; refresh stale commands when the startup preference changes.
 - Document startup authentication and fan-control behavior.

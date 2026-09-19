@@ -61,11 +61,16 @@ Python environment, so they do not require a system-installed `gwe` command.
 Toggle the preference off and on to refresh an older startup entry.
 
 The app starts hidden as your normal user. Applying a saved custom fan profile
-still requires polkit authentication; logging in does not authorize GPU controls.
-Keep the app running to follow the curve. Quitting restores firmware fan control.
-No passwordless root policy is installed: the current worker and Python environment
-are user-writable. Unattended authorization needs a separately installed,
-root-owned helper and a narrowly scoped policy.
+requires polkit authentication unless the optional system helper is installed.
+See [CONTROL-HELPER.md](CONTROL-HELPER.md) for passwordless authorization scoped
+to your active local session. Keep the app running to follow the curve; quitting
+restores firmware fan control.
+
+The main window remembers its normal size and maximized state across launches.
+Activate the tray icon to show or hide the window; right-click opens its menu.
+Your desktop chooses the activation gesture: GNOME's AppIndicator extension uses
+double-click or middle-click, while other hosts may use a single click. The tray
+requires the `Dbusmenu` and `DbusmenuGtk3` GObject introspection libraries.
 
 ## Command-line options
 
