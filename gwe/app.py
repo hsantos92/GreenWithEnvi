@@ -74,12 +74,17 @@ class Application(Gtk.Application):
             self._window.set_icon_name(APP_ICON_NAME)
             self._window.set_application(self)
             self._view.restore_window_state()
-            self._window.show_all()
+            # Prepare the contents without mapping the top-level window. Mapping
+            # and then hiding it can flash the window and steal focus at login.
+            for child in (self._window.get_child(), self._window.get_titlebar()):
+                if child is not None:
+                    child.show_all()
             self._view.show()
-        self._window.present()
         if self._start_hidden:
             self._window.hide()
             self._start_hidden = False
+        else:
+            self._window.present()
 
     def do_shutdown(self) -> None:
         self._view.save_window_state()
