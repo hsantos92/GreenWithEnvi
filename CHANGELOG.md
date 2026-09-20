@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Prevent the main window from flashing during hidden startup while keeping tray
+  access and GPU controls initialized.
+
 - Preserve symbolic tray icon recoloring through the desktop icon theme.
 
 - Add an optional root-owned GPU helper and narrowly scoped passwordless polkit
