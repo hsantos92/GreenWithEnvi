@@ -31,6 +31,7 @@ _PROPERTIES = {
 _XML = '<node><interface name="' + _INTERFACE + '">' + ''.join(
     f'<property name="{name}" type="{value[0]}" access="read"/>'
     for name, value in _PROPERTIES.items()) + '''
+<method name="ProvideXdgActivationToken"><arg type="s" direction="in"/></method>
 <method name="Activate"><arg type="i" direction="in"/><arg type="i" direction="in"/></method>
 <method name="SecondaryActivate"><arg type="i" direction="in"/><arg type="i" direction="in"/></method>
 <method name="ContextMenu"><arg type="i" direction="in"/><arg type="i" direction="in"/></method>
@@ -56,6 +57,8 @@ class Indicator:
 
     def __init__(self, app_id):
         self.activate = lambda: None
+        self.secondary_activate = lambda: None
+        self.provide_activation_token = lambda token: None
         self.menu = None
         self.values = dict(_PROPERTIES)
         self.values['Id'] = ('s', app_id)
@@ -84,8 +87,12 @@ class Indicator:
         return GLib.Variant(*self.values[name])
 
     def _method(self, _connection, _sender, _path, _interface, method, _args, invocation):
-        if method in ('Activate', 'SecondaryActivate'):
+        if method == 'ProvideXdgActivationToken':
+            self.provide_activation_token(_args.unpack()[0])
+        elif method == 'Activate':
             self.activate()
+        elif method == 'SecondaryActivate':
+            self.secondary_activate()
         elif method == 'ContextMenu' and self.menu is not None:
             self.menu.popup_at_pointer(None)
         invocation.return_value(None)

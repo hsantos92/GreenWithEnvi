@@ -1,0 +1,46 @@
+--- a/indicatorStatusIcon.js
++++ b/indicatorStatusIcon.js
+@@ -361,7 +361,9 @@
+         const [x, y] = event.get_coords();
+         const time = event.get_time();
+         const {doubleClickDistance, doubleClickTime} =
+-            Clutter.Settings.get_default();
++            typeof Clutter.Settings.get_default === 'function'
++                ? Clutter.Settings.get_default()
++                : global.stage.get_context().get_settings();
+
+         if (time > (this._lastClickTime + doubleClickTime) ||
+             (Math.abs(x - this._lastClickX) > doubleClickDistance) ||
+@@ -393,7 +395,9 @@
+     }
+
+     async _waitForDoubleClick() {
+-        const {doubleClickTime} = Clutter.Settings.get_default();
++        const {doubleClickTime} = typeof Clutter.Settings.get_default === 'function'
++            ? Clutter.Settings.get_default()
++            : global.stage.get_context().get_settings();
+         this._waitDoubleClickPromise = new PromiseUtils.TimeoutPromise(
+             doubleClickTime);
+
+@@ -430,6 +434,21 @@
+         if (event.get_button() === Clutter.BUTTON_SECONDARY) {
+             this.menu.toggle();
+             return Clutter.EVENT_PROPAGATE;
++        }
++
++        // GWE: single click opens, double-click hides; right-click keeps its menu.
++        if (event.get_button() === Clutter.BUTTON_PRIMARY &&
++            this._indicator.id === 'com.leinardi.gwe') {
++            const doubleClick = this._updateClickCount(event) === 2;
++            const [x, y] = event.get_coords();
++            const timestamp = event.get_time();
++            // Finish opening before a second click toggles the window closed.
++            this._gweActivationPromise = (this._gweActivationPromise ?? Promise.resolve())
++                .then(() => doubleClick
++                    ? this._indicator.secondaryActivate(timestamp, x, y)
++                    : this._indicator.open(x, y, timestamp))
++                .catch(logError);
++            return Clutter.EVENT_STOP;
+         }
+
+         const doubleClickHandled = this._maybeHandleDoubleClick(event);
