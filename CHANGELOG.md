@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Provide an optional GNOME AppIndicator patch for single-click opening and
+  double-click hiding, including GNOME 51 double-click settings compatibility.
+
+- Accept tray activation tokens for Wayland focus and bring the window forward
+  on primary activation; keep middle-click visibility toggling.
+
 - Prevent the main window from flashing during hidden startup while keeping tray
   access and GPU controls initialized.
 

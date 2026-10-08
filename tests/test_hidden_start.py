@@ -53,3 +53,10 @@ class HiddenStartTests(unittest.TestCase):
         window.props.visible = True
         MainView.toggle_window_visibility(view)
         window.hide.assert_called_once()
+
+    def test_primary_activation_presents_an_already_visible_window(self):
+        window = MagicMock()
+        window.props.visible = True
+        MainView.present_window(SimpleNamespace(_window=window))
+        window.present.assert_called_once()
+        window.hide.assert_not_called()

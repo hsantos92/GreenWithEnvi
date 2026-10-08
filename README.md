@@ -67,10 +67,27 @@ to your active local session. Keep the app running to follow the curve; quitting
 restores firmware fan control.
 
 The main window remembers its normal size and maximized state across launches.
-Activate the tray icon to show or hide the window; right-click opens its menu.
+Primary activation opens or raises the window; middle-click toggles its visibility
+and right-click opens its menu.
 Your desktop chooses the activation gesture: GNOME's AppIndicator extension uses
 double-click or middle-click, while other hosts may use a single click. The tray
 requires the `Dbusmenu` and `DbusmenuGtk3` GObject introspection libraries.
+
+For single-click opening and double-click hiding on GNOME, apply the optional
+GWE-specific AppIndicator patch from the checkout root:
+
+```sh
+patch --backup --forward --directory="$HOME/.local/share/gnome-shell/extensions/appindicatorsupport@rgcjonas.gmail.com" -p1 < contrib/gnome-appindicator-gwe.patch
+```
+
+Log out and back in to load it. A single left-click opens or raises GWE, a double
+left-click hides its window while GPU controls keep running, and right-click
+opens the menu. The patch also fixes double-click settings lookup on GNOME 51.
+It targets a user-installed AppIndicator extension and saves the original as
+`indicatorStatusIcon.js.orig`; extension updates may require reapplying it.
+If patch reports that it is already applied or its context does not match, stop
+and inspect the installed extension before retrying.
+
 
 ## Command-line options
 

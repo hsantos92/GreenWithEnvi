@@ -194,7 +194,9 @@ class MainView(MainViewInterface):
                 self._app_indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
             else:
                 self._app_indicator.set_status(AppIndicator3.IndicatorStatus.PASSIVE)
-            self._app_indicator.activate = self.toggle_window_visibility
+            self._app_indicator.activate = self.present_window
+            self._app_indicator.secondary_activate = self.toggle_window_visibility
+            self._app_indicator.provide_activation_token = self._window.set_startup_id
             self._app_indicator.set_menu(self._main_menu)
 
     def show_main_infobar_message(self, message: str, markup: bool = False) -> None:
@@ -203,6 +205,9 @@ class MainView(MainViewInterface):
         else:
             self._main_infobar_label.set_label(message)
         self._main_infobar.set_revealed(True)
+
+    def present_window(self) -> None:
+        self._window.present()
 
     def toggle_window_visibility(self) -> None:
         if self._window.props.visible:
