@@ -15,6 +15,7 @@ Project: [hsantos92/GreenWithEnvi](https://github.com/hsantos92/GreenWithEnvi)
 
 Available readings and controls depend on the GPU and driver. Unsupported sensors
 remain blank. Coolbits and the X11 NV-CONTROL extension are no longer required.
+<img width="3389" height="1412" alt="Screenshot From 2026-10-08 23-12-29" src="https://github.com/user-attachments/assets/ab305e71-da9c-4f56-a0ba-9bb640bd0155" />
 
 ## Run from source
 
